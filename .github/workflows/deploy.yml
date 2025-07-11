@@ -65,3 +65,14 @@ jobs:
             --set image.tag=latest \
             --wait \
             --debug
+
+      - name: 🔍 Debug - Verificar contexto y recursos en EKS
+        run: |
+          echo "🧠 Contexto actual:"
+          kubectl config current-context
+          echo "🔍 Pods:"
+          kubectl get pods -n default || true
+          echo "🔍 Deployments:"
+          kubectl get deployment -n default || true
+          echo "🔍 Services:"
+          kubectl get svc -n default || true
