@@ -8,6 +8,10 @@ terraform.tfstate.backup
 # Binarios
 *.exe
 *.zip
+*.bin
+*.tar.gz
+*.bak
+*.log
 
 # Lockfiles
 *.lock.hcl
