@@ -52,8 +52,14 @@ jobs:
       - name: Update kubeconfig
         run: aws eks update-kubeconfig --name test-eks-devops
 
+     
+      - name: Cleanup previous release with Helm
+        run: |
+          helm uninstall nginx-hello -n default || echo "No previous release to delete"
+
       - name: Deploy with Helm
         run: |
-          helm upgrade --install app ./helm/app \
+          helm upgrade --install nginx-hello ./helm/app \
+            --namespace default \
             --set image.repository=ghcr.io/${{ env.IMAGE_NAME }} \
             --set image.tag=latest
