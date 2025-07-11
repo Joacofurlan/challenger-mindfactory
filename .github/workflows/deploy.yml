@@ -1,4 +1,4 @@
-name: Build and Deploy to EKS
+name: Test Build and Deploy to EKS
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
+  IMAGE_NAME: joacofurlan/challenger-mindfactory
 
 jobs:
   build-and-push:
@@ -54,6 +54,6 @@ jobs:
 
       - name: Deploy with Helm
         run: |
-          helm upgrade --install mi-app ./helm/mi-app \
-            --set image.repository=ghcr.io/${{ github.repository }} \
+          helm upgrade --install app ./helm/app \
+            --set image.repository=ghcr.io/${{ env.IMAGE_NAME }} \
             --set image.tag=latest
