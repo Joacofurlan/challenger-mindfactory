@@ -1,0 +1,4 @@
+5962e662039c1ba04350a8732ccb4417903c6768 16006496 terraform-provider-cloudinit_v2.3.7_x5.exe
+011fda03b4b529972a001d69daefe460717ea567 56537952 terraform-provider-kubernetes_v2.37.1_x5.exe
+256389d32d0f21c8cbe850e9f3026ade00e7d40d 18157400 terraform-provider-tls_v4.1.0_x5.exe
+dba94add3a482f025eb7ec573fbb7c63c5682ef9 91038896 terraform.exe

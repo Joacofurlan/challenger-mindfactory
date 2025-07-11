@@ -1,5 +1,5 @@
 image:
-  repository: ghcr.io/Joacofurlan/app
+  repository: ghcr.io/joacofurlan/challenger-mindfactory
   tag: latest
   pullPolicy: IfNotPresent
 

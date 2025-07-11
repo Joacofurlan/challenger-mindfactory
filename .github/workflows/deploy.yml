@@ -50,7 +50,7 @@ jobs:
           aws-region: us-east-1
 
       - name: Update kubeconfig
-        run: aws eks update-kubeconfig --name tu-cluster-eks
+        run: aws eks update-kubeconfig --name test-eks-devops
 
       - name: Deploy with Helm
         run: |
