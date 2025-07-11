@@ -62,6 +62,6 @@ jobs:
             --namespace default \
             --values ./helm/app/values.yaml \
             --set image.repository=ghcr.io/${{ env.IMAGE_NAME }} \
-            --set image.tag=latest
+            --set image.tag=latest \
             -- wait \
             --debug
