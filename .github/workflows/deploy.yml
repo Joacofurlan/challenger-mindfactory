@@ -52,13 +52,6 @@ jobs:
       - name: Update kubeconfig
         run: aws eks update-kubeconfig --name test-eks-devops
 
-      - name: Install Helm
-        run: |
-          curl https://get.helm.sh/helm-v3.10.3-linux-amd64.tar.gz -o helm.tar.gz
-          tar -xvf helm.tar.gz
-          mv linux-amd64/helm /usr/local/bin/helm
-          helm version
-
       - name: Cleanup previous release with Helm
         run: |
           helm uninstall nginx-hello -n default || echo "No previous release to delete"
@@ -67,6 +60,9 @@ jobs:
         run: |
           helm upgrade --install nginx-hello ./helm/app \
             --namespace default \
+            --values ./helm/app/values.yaml \
             --set image.repository=ghcr.io/${{ env.IMAGE_NAME }} \
-            --set image.tag=latest \
-            --values ./helm/app/values.yaml
+            --set image.tag=latest
+
+      - name: Confirm deployed replicas
+        run: kubectl get deployment nginx-hello -n default
