@@ -1,4 +1,5 @@
-name: Test Build and Deploy to EKS
+# .github/workflows/deploy.yaml
+name: Tes Build and Deploy to EKS
 
 on:
   push:
@@ -7,6 +8,8 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: joacofurlan/challenger-mindfactory
+  CLUSTER_NAME: test-eks-devops
+  AWS_REGION: us-east-1
 
 jobs:
   build-and-push:
@@ -26,9 +29,9 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build & Push Docker image
+      - name: Build and Push Docker image
         run: |
-          docker build -t $REGISTRY/${{ env.IMAGE_NAME }}:latest ./app
+          docker build -t $REGISTRY/${{ env.IMAGE_NAME }}:latest .
           docker push $REGISTRY/${{ env.IMAGE_NAME }}:latest
 
   deploy:
@@ -42,37 +45,32 @@ jobs:
       - name: Setup kubectl
         uses: azure/setup-kubectl@v3
 
+      - name: Setup Helm
+        uses: azure/setup-helm@v3
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
+          aws-region: ${{ env.AWS_REGION }}
 
       - name: Update kubeconfig
-        run: aws eks update-kubeconfig --name test-eks-devops
+        run: aws eks update-kubeconfig --name $CLUSTER_NAME --region $AWS_REGION
 
-      - name: Cleanup previous release with Helm
-        run: |
-          helm uninstall nginx-hello -n default || echo "No previous release to delete"
-
-      - name: Deploy with Helm
+      - name: Helm Upgrade or Install
         run: |
           helm upgrade --install nginx-hello ./helm/app \
             --namespace default \
             --values ./helm/app/values.yaml \
-            --set image.repository=ghcr.io/${{ env.IMAGE_NAME }} \
+            --set image.repository=$REGISTRY/${{ env.IMAGE_NAME }} \
             --set image.tag=latest \
             --wait \
             --debug
 
-      - name: 🔍 Debug - Verificar contexto y recursos en EKS
+      - name: Show context info
         run: |
-          echo "🧠 Contexto actual:"
-          kubectl config current-context
-          echo "🔍 Pods:"
-          kubectl get pods -n default || true
-          echo "🔍 Deployments:"
-          kubectl get deployment -n default || true
-          echo "🔍 Services:"
-          kubectl get svc -n default || true
+          echo "\n🧠 Contexto actual:" && kubectl config current-context
+          echo "\n🔍 Pods:" && kubectl get pods -n default
+          echo "\n🔍 Services:" && kubectl get svc -n default
+          echo "\n🔍 Deployments:" && kubectl get deployment -n default

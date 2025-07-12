@@ -1,21 +1,23 @@
+const express = require("express");
 const redis = require("redis");
+const app = express();
+const port = 80;
+
 const client = redis.createClient({
   socket: {
-    host: "redis-service.default.svc.cluster.local",
-    port: 6379
+    host: process.env.REDIS_HOST,
+    port: process.env.REDIS_PORT
   }
 });
 
-client.connect()
-  .then(() => {
-    console.log("Conexión a Redis exitosa");
-    return client.set("hello", "world");
-  })
-  .then(() => {
-    console.log("Se escribió en Redis: hello=world");
-    return client.get("hello");
-  })
-  .then(value => {
-    console.log("Redis value: ", value); // Esto debería mostrar "world"
-  })
-  .catch(err => console.error("Redis error: ", err));
+client.connect().catch(console.error);
+
+app.get("/", async (req, res) => {
+  await client.set("hello", "world");
+  const value = await client.get("hello");
+  res.send(`Hello from Redis: ${value}`);
+});
+
+app.listen(port, () => {
+  console.log(`App running on port ${port}`);
+});

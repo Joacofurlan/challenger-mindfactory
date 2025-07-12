@@ -13,7 +13,7 @@ spec:
         app: {{ .Release.Name }}
     spec:
       containers:
-        - name: app
+        - name: nginx-redis-app
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:

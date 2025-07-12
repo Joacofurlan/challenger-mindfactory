@@ -1,14 +1,14 @@
+replicaCount: 3
+
 image:
   repository: ghcr.io/joacofurlan/challenger-mindfactory
   tag: latest
   pullPolicy: IfNotPresent
-
-replicaCount: 3
 
 service:
   type: NodePort
   port: 80
 
 redis:
-  host: redis-service.default.svc.cluster.local
+  host: test-redis-devops.rrr7yo.ng.0001.use1.cache.amazonaws.com
   port: 6379

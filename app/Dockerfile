@@ -1,8 +1,17 @@
-FROM node:20-alpine
+# app/Dockerfile
+FROM node:18-alpine
 
+# Crear directorio de la app
 WORKDIR /app
-COPY redis.js .
 
-RUN npm install redis
+# Copiar dependencias y archivos
+COPY package*.json ./
+RUN npm install
 
-CMD ["node", "redis.js"]
+COPY . .
+
+# Exponer puerto
+EXPOSE 80
+
+# Comando de inicio
+CMD ["node", "server.js"]
