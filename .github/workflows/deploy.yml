@@ -31,7 +31,7 @@ jobs:
 
       - name: Build and Push Docker image
         run: |
-          docker build -t $REGISTRY/${{ env.IMAGE_NAME }}:latest .
+          docker build -t $REGISTRY/${{ env.IMAGE_NAME }}:latest ./app
           docker push $REGISTRY/${{ env.IMAGE_NAME }}:latest
 
   deploy:

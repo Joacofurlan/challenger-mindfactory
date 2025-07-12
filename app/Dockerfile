@@ -14,4 +14,4 @@ COPY . .
 EXPOSE 80
 
 # Comando de inicio
-CMD ["node", "server.js"]
+CMD ["node", "redis.js"]
