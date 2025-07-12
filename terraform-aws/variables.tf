@@ -1,31 +1,20 @@
-# variables.tf 
 
 variable "aws_region" {
-  description = "AWS region"
-  type        = string
-  default     = "ap-southeast-1"
+  description = "Región de AWS"
+  default     = "us-east-1"
 }
 
 variable "cluster_name" {
-  description = "Nombre del cluster EKS"
-  type        = string
+  description = "Nombre del cluster de EKS"
   default     = "test-eks-devops"
 }
 
 variable "s3_bucket_name" {
-  description = "Nombre del bucket S3"
-  type        = string
-  default     = "test-bucket-devops-100725"
-}
-
-variable "redis_cluster_id" {
-  description = "ID of the Redis cluster"
-  type        = string
-  default     = "test-redis-devops"
+  description = "Nombre del bucket de S3"
+  default     = "test-bucket-devops-120725"
 }
 
 variable "redis_node_type" {
-  description = "Instance type for Redis"
-  type        = string
-  default     = "cache.t3.micro"
+  description = "Tipo de instancia para Redis"
+  default     = "cache.t4g.micro"
 }

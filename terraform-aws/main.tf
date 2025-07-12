@@ -1,3 +1,4 @@
+
 terraform {
   required_providers {
     aws = {
@@ -66,11 +67,11 @@ module "eks" {
 
   eks_managed_node_groups = {
     one = {
-      name            = "test-nodegroup-devops"
-      instance_types  = ["t3.small"]
-      min_size        = 1
-      max_size        = 3
-      desired_size    = 1
+      name           = "test-nodegroup-devops"
+      instance_types = ["t3.small"]
+      min_size       = 1
+      max_size       = 3
+      desired_size   = 1
     }
   }
 
@@ -109,7 +110,7 @@ resource "aws_iam_role_policy" "s3_access" {
     Version = "2012-10-17",
     Statement = [
       {
-        Action = ["s3:GetObject", "s3:ListBucket", "s3:PutObject"],
+        Action   = ["s3:GetObject", "s3:ListBucket", "s3:PutObject"],
         Effect   = "Allow",
         Resource = [aws_s3_bucket.html.arn, "${aws_s3_bucket.html.arn}/*"]
       }
@@ -125,10 +126,11 @@ resource "aws_elasticache_subnet_group" "redis" {
 resource "aws_elasticache_cluster" "redis" {
   cluster_id           = "test-redis-devops"
   engine               = "redis"
-  node_type            = "cache.t3.micro"
+  node_type            = var.redis_node_type
   num_cache_nodes      = 1
   parameter_group_name = "default.redis7"
   subnet_group_name    = aws_elasticache_subnet_group.redis.name
   port                 = 6379
+  security_group_ids   = [module.eks.node_security_group_id]
   tags                 = local.common_tags
 }
