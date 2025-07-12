@@ -10,5 +10,5 @@ service:
   port: 80
 
 redis:
-  host: test-redis-devops.rrr7yo.ng.0001.use1.cache.amazonaws.com
+  host: clustercfg.test-redis-devops.fvaym2.use1.cache.amazonaws.com
   port: 6379
