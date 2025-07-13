@@ -17,13 +17,10 @@ app.get("/", async (req, res) => {
   try {
     await client.set("hello", "world");
     const value = await client.get("hello");
+    console.log("Valor leído desde Redis:", value);
     res.send(`Hello from Redis: ${value}`);
   } catch (err) {
-    console.error(err);
+    console.error("Error en Redis:", err);
     res.status(500).send("Redis error");
   }
-});
-
-app.listen(port, () => {
-  console.log(`App running on port ${port}`);
 });
