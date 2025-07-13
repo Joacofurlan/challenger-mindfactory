@@ -23,3 +23,15 @@ spec:
               value: {{ .Values.redis.host | quote }}
             - name: REDIS_PORT
               value: {{ .Values.redis.port | quote }}
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 10
+            periodSeconds: 20
