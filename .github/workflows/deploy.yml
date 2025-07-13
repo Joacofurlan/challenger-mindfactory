@@ -58,13 +58,16 @@ jobs:
       - name: Update kubeconfig
         run: aws eks update-kubeconfig --name $CLUSTER_NAME --region $AWS_REGION
 
+      - name: Generate unique tag (cache bust)
+        run: echo "IMAGE_TAG=$(date +%s)" >> $GITHUB_ENV
+
       - name: Helm Upgrade or Install
         run: |
           helm upgrade --install nginx-hello ./helm/app \
             --namespace default \
             --values ./helm/app/values.yaml \
             --set image.repository=$REGISTRY/${{ env.IMAGE_NAME }} \
-            --set image.tag=latest \
+            --set image.tag=$IMAGE_TAG \
             --wait \
             --debug
 
