@@ -10,7 +10,7 @@ Este proyecto resuelve un desafío técnico de DevOps, incluyendo:
 - 
 ## 📌 Requisitos del desafío
 
-### 1. Infraestructura como Código (IaC)
+### 1. Infraestructura como Código (IaC) 
 
 * Utilizar Terraform o Pulumi.
 * Provisionar en AWS:
@@ -103,142 +103,152 @@ kubectl get svc -n default
 ## Eliminacion:
 terraform destroy
 
-## 🚀 Aplicación (NGINX + Node.js + Redis)
+# 🚀 Despliegue de Aplicación Node.js + Redis en EKS (Parte 2)
 
-### Estructura de la app
+Como desplegar una aplicación Node.js + Redis sobre Kubernetes en AWS, utilizando:
 
-La app consiste en un servidor `Node.js` (`redis.js`) que:
+- Helm para empaquetar y desplegar la app
+- GitHub Actions para automatizar CI/CD
+- Redis (ElastiCache) como base de datos
+- DNS privado para acceso desde tu máquina
 
-1. Se conecta a Redis vía `TLS`.
-2. Setea el valor `hello = world`.
-3. Lo recupera y lo muestra vía HTTP (`/`).
-
-```js
-const client = redis.createClient({
-  socket: {
-    host: process.env.REDIS_HOST,
-    port: process.env.REDIS_PORT,
-    tls: true,
-    servername: process.env.REDIS_HOST
-  }
-});
-```
-
-### Dockerfile
-
-```Dockerfile
-FROM node:18-alpine
-WORKDIR /app
-COPY package*.json ./
-RUN npm install
-COPY . .
-RUN apk add --no-cache curl ca-certificates
-EXPOSE 80
-CMD ["node", "redis.js"]
-```
+La infraestructura (EKS, Redis, S3, etc.) ya debe haber sido creada con Terraform previamente (ver "1. Infraestructura como Código (IaC)" ).
 
 ---
 
-## 📦 Helm Chart personalizado
+## ✅ ¿Qué hace esta aplicación?
 
-El Helm chart (`helm/app`) permite parametrizar:
+- Ejecuta un contenedor Node.js que:
+  - Sirve un archivo HTML con `Hello World`
+  - Lee y escribe valores en Redis
+- Se despliega con 1 a 3 réplicas en Kubernetes (EKS)
+- Se accede desde tu máquina usando un DNS privado (`nginx.hello.local`)
 
-* Imagen Docker (`repository`, `tag`).
-* `replicaCount`.
-* Host y puerto de Redis desde `values.yaml`:
+## 📁 Estructura del Proyecto
 
-```yaml
-image:
-  repository: ghcr.io/joacofurlan/challenger-mindfactory
-  tag: latest
-  pullPolicy: Always
+challenger-mindfactory/
+├── app/ # Código Node.js (Dockerizado)
+│ ├── redis.js
+│ ├── Dockerfile
+│ └── package.json
+│
+├── helm/app/ #
+│ ├── values.yaml
+│ ├── Chart.yaml
+│ └── templates/
+│ ├── deployment.yaml
+│ ├── service.yaml
+│ 
+│
+└── .github/workflows/
+└── deploy.yaml # CI/CD con GitHub Actions
+
+## 🧩 Requisitos Previos
+
+Antes de continuar, asegurate de tener:
+
+- El clúster EKS funcionando (ver README-parte-1)
+- Redis desplegado en ElastiCache
+- Terraform ya ejecutado
+- Docker habilitado en GitHub Actions
+- Secretos configurados en GitHub:
+ `AWS_ACCESS_KEY_ID` Para autenticarse con AWS
+ `AWS_SECRET_ACCESS_KEY` Para autenticarse con AWS
+
+## 🚦 Paso 1: Clonar el Repositorio
+
+git clone https://github.com/joacofurlan/challenger-mindfactory.git
+cd challenger-mindfactory
+
+⚙️ Paso 2: Revisar el archivo values.yaml
+Ubicado en helm/app/values.yaml. Asegurate de tener el host Redis correcto:
 
 replicaCount: 3
 
+image:
+  repository: ghcr.io/joacofurlan/challenger-mindfactory
+  tag: latest
+
+service:
+  type: ClusterIP
+  port: 80
+
 redis:
-  host: test-redis-devops.cluster-xxxxxxx.usw2.cache.amazonaws.com
+  host: clustercfg.test-redis-devops.fvaym2.use1.cache.amazonaws.com
   port: 6379
-```
+  
+⚙️ Paso 3: Configurar tu entorno local para probar luego
+Para simular un DNS privado desde tu PC:
 
----
+Abrí el bloc de notas como administrador (click derecho → Ejecutar como administrador)
 
-## ⚙️ CI/CD - GitHub Actions
+Abrí el archivo:
 
-Workflow `.github/workflows/deploy.yaml`:
+C:\Windows\System32\drivers\etc\hosts
+Agregá esta línea al final:
+127.0.0.1 nginx.hello.local
+Guardá y cerrá.
 
-* Construye imagen y la sube a `GitHub Container Registry (GHCR)`.
-* Luego ejecuta `helm upgrade --install` contra el clúster `EKS`.
+Esto permitirá que al hacer curl http://nginx.hello.local:8080 tu máquina redirija a localhost (útil para testing).
 
-### Variables importantes:
+🚀 Paso 4: GitHub Actions - Deploy Automático
+Cada vez que se hace git push a la rama main, GitHub va a:
 
-```yaml
-env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: joacofurlan/challenger-mindfactory
-  CLUSTER_NAME: test-eks-devops
-  AWS_REGION: us-east-1
-```
+Construir la imagen Docker a partir de app/Dockerfile
 
-### Comando Helm ejecutado
+Subirla a GitHub Container Registry (GHCR)
 
-```bash
+Actualizar tu clúster EKS usando Helm
+
+No necesitás hacer nada más. El archivo .github/workflows/deploy.yaml ya contiene todo:
+
 helm upgrade --install nginx-hello ./helm/app \
   --namespace default \
   --values ./helm/app/values.yaml \
   --set image.repository=ghcr.io/joacofurlan/challenger-mindfactory \
   --set image.tag=latest \
-  --wait --debug
-```
+  --wait \
+  --debug
+  
+🧪 Paso 5: Validar el Despliegue
+Verificar pods:
+kubectl get pods
+Todos deben aparecer en estado Running.
 
-> ⚠️ En caso de error de `another operation in progress`, se resolvió con:
->
-> ```bash
-> helm rollback nginx-hello <última_revision_estable>
-> ```
-
----
-
-## 🌐 DNS privado con `/etc/hosts`
-
-### Paso a paso:
-
-1. Ejecutar port-forward para exponer localmente:
-
-```bash
-kubectl port-forward svc/nginx-hello 8080:80
-```
-
-2. Abrir como **Administrador** el archivo:
-
-```plaintext
-C:\Windows\System32\drivers\etc\hosts
-```
-
-3. Agregar esta línea (importante guardar con permisos de administrador):
-
-```plaintext
-127.0.0.1 nginx.hello.local
-```
-
-4. Acceder desde el navegador o terminal:
-
-```bash
+Probar internamente:
+kubectl exec -it <nombre-del-pod> -- sh
+curl localhost/
+# Debe mostrar:
+Hello from Redis: world
+Probar desde tu PC (DNS simulado):
+bash
+Copiar
+Editar
 curl http://nginx.hello.local:8080
-```
+# También debe mostrar:
+Hello from Redis: world
+Si no funciona, asegurate de tener configurado correctamente el archivo hosts de Windows y que estés redirigiendo al puerto correcto con port-forward si es necesario.
 
----
+🧹 Rollbacks (si algo sale mal)
+Si un deploy falla (por ejemplo: error en Helm o falla de pull de imagen):
 
-## 🧪 Verificación funcional
+bash
+Copiar
+Editar
+helm rollback nginx-hello <número-de-revision>
+Para ver el historial:
 
-✔️ `kubectl get pods` muestra los 3 pods de la app `Running`.
-✔️ `kubectl exec` + `curl localhost` muestra `Hello from Redis: world`.
-✔️ Acceso desde Windows vía DNS privado simulado funciona correctamente.
+bash
+Copiar
+Editar
+helm history nginx-hello
+🧼 Limpieza Manual
+Para eliminar el despliegue:
 
----
-
-## ✅ Resultado final
-
-Todos los requerimientos del desafío están **completamente cumplidos**, de forma profesional, reproducible y automatizada.
+bash
+Copiar
+Editar
+helm uninstall nginx-hello
 
 ---
 
