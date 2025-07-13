@@ -1,4 +1,3 @@
-
 terraform {
   required_providers {
     aws = {
@@ -78,6 +77,38 @@ module "eks" {
   tags = local.common_tags
 }
 
+resource "aws_security_group" "redis" {
+  name        = "test-redis-devops"
+  description = "Permitir acceso a Redis desde EKS"
+  vpc_id      = module.vpc.vpc_id
+
+  ingress {
+    description      = "Permitir desde los nodos EKS (SG del node group)"
+    from_port        = 6379
+    to_port          = 6390
+    protocol         = "tcp"
+    security_groups  = [module.eks.node_security_group_id]
+  }
+
+  ingress {
+    description = "Permitir desde la VPC (10.0.0.0/16)"
+    from_port   = 6379
+    to_port     = 6379
+    protocol    = "tcp"
+    cidr_blocks = ["10.0.0.0/16"]
+  }
+
+  egress {
+    description = "Permitir todo el tráfico saliente"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = local.common_tags
+}
+
 resource "aws_s3_bucket" "html" {
   bucket = var.s3_bucket_name
   tags   = local.common_tags
@@ -131,6 +162,6 @@ resource "aws_elasticache_cluster" "redis" {
   parameter_group_name = "default.redis7"
   subnet_group_name    = aws_elasticache_subnet_group.redis.name
   port                 = 6379
-  security_group_ids   = [module.eks.node_security_group_id]
+  security_group_ids   = [aws_security_group.redis.id]
   tags                 = local.common_tags
 }
