@@ -67,7 +67,7 @@ jobs:
             --namespace default \
             --values ./helm/app/values.yaml \
             --set image.repository=$REGISTRY/${{ env.IMAGE_NAME }} \
-            --set image.tag=$IMAGE_TAG \
+            --set image.tag=latest \
             --wait \
             --debug
 
