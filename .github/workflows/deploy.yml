@@ -1,5 +1,5 @@
 # .github/workflows/deploy.yaml
-name: Tes Build and Deploy to EKS
+name: Test Build and Deploy to EKS
 
 on:
   push:
@@ -18,9 +18,16 @@ jobs:
       contents: read
       packages: write
 
+    outputs:
+      image_tag: ${{ steps.generate_tag.outputs.image_tag }}
+
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+
+      - name: Generate unique tag (timestamp)
+        id: generate_tag
+        run: echo "image_tag=$(date +%s)" >> $GITHUB_OUTPUT
 
       - name: Log in to GHCR
         uses: docker/login-action@v2
@@ -31,12 +38,14 @@ jobs:
 
       - name: Build and Push Docker image
         run: |
-          docker build -t $REGISTRY/${{ env.IMAGE_NAME }}:latest ./app
-          docker push $REGISTRY/${{ env.IMAGE_NAME }}:latest
+          docker build -t $REGISTRY/${{ env.IMAGE_NAME }}:${{ steps.generate_tag.outputs.image_tag }} ./app
+          docker push $REGISTRY/${{ env.IMAGE_NAME }}:${{ steps.generate_tag.outputs.image_tag }}
 
   deploy:
     needs: build-and-push
     runs-on: ubuntu-latest
+    env:
+      IMAGE_TAG: ${{ needs.build-and-push.outputs.image_tag }}
 
     steps:
       - name: Checkout
@@ -58,16 +67,13 @@ jobs:
       - name: Update kubeconfig
         run: aws eks update-kubeconfig --name $CLUSTER_NAME --region $AWS_REGION
 
-      - name: Generate unique tag (cache bust)
-        run: echo "IMAGE_TAG=$(date +%s)" >> $GITHUB_ENV
-
       - name: Helm Upgrade or Install
         run: |
           helm upgrade --install nginx-hello ./helm/app \
             --namespace default \
             --values ./helm/app/values.yaml \
             --set image.repository=$REGISTRY/${{ env.IMAGE_NAME }} \
-            --set image.tag=latest \
+            --set image.tag=$IMAGE_TAG \
             --wait \
             --debug
 
