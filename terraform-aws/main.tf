@@ -99,7 +99,7 @@ resource "aws_security_group" "redis" {
   }
 
   egress {
-    description = "Permitir todo el tráfico saliente"
+    description = "Permitir todo el trafico saliente"
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
