@@ -1,4 +1,4 @@
-# Challenger MindFactory - (NGINX + Redis + AWS + GitHub Actions)
+# Challenger MindFactory
 
 Este proyecto resuelve un desafío técnico de DevOps, incluyendo:
 - Infraestructura como código con Terraform.
