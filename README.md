@@ -7,8 +7,7 @@ Este proyecto resuelve un desafío técnico de DevOps, incluyendo:
 - Escalado automático de aplicación con NGINX + Redis.
 - Automatización de CI/CD con GitHub Actions.
 - Acceso vía DNS privado (`/etc/hosts`) desde entorno local.
-- [Se diagrama la infraestructura.](./diagrama/)
-- [Ver diagrama de red](./diagrama/arquitectura.png)
+- [Se diagrama la infraestructura.](./diagrama/).
 - [Se calculó los costos por mes del Proyecto.](./costos)
 
   
