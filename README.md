@@ -7,7 +7,9 @@ Este proyecto resuelve un desafío técnico de DevOps, incluyendo:
 - Escalado automático de aplicación con NGINX + Redis.
 - Automatización de CI/CD con GitHub Actions.
 - Acceso vía DNS privado (`/etc/hosts`) desde entorno local.
-- 
+- Se diagrama la infraestructura
+- Se calculo los aproximados por mes del Proyecto
+  
 ## 📌 Requisitos del desafío
 
 ### 1. Infraestructura como Código (IaC) 
