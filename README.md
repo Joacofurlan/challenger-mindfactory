@@ -46,62 +46,90 @@ El proyecto está compuesto por módulos y configuraciones para:
 - terraform/main.tf: recursos principales (VPC, EKS, Redis, S3, SGs)
 - terraform/variables.tf: definición de variables reutilizables
 - terraform/outputs.tf: exporta datos útiles para otros módulos o para debugging
-- 
+  
 ## Requisitos Previos
 Terraform >= 1.0
-AWS CLI configurado: https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html
+[AWS CLI configurado](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html)
+
 
 ## Exportar las credenciales de AWS:
-export AWS_ACCESS_KEY_ID=AKIA...
-export AWS_SECRET_ACCESS_KEY=...
-export AWS_DEFAULT_REGION=us-east-1
+`export AWS_ACCESS_KEY_ID=AKIA...`
+
+`export AWS_SECRET_ACCESS_KEY=...`
+
+`export AWS_DEFAULT_REGION=us-east-1`
 
 ## Variables necesarias
 Las variables ya vienen con valores por defecto definidos en variables.tf:
-aws_region      = "us-east-1"
-cluster_name    = "test-eks-devops"
-s3_bucket_name  = "test-bucket-devops-120725"
-redis_node_type = "cache.t3.micro"
+
+`aws_region      = "us-east-1"`
+
+`cluster_name    = "test-eks-devops"`
+
+`s3_bucket_name  = "test-bucket-devops-120725"`
+
+`redis_node_type = "cache.t3.micro"`
 
 
 ## PASO A PASO
 1. Clonar el repo y posicionarse en la carpeta:
+```bash
 git clone https://github.com/joacofurlan/challenger-mindfactory.git
+```
 cd challenger-mindfactory/terraform
 
-2. Inicializar Terraform:
+3. Inicializar Terraform:
+```bash
 terraform init
+```
 
-3. Revisar el plan:
+5. Revisar el plan:
+```bash
 terraform plan -out=tfplan
+```
 
-4. Aplicar cambios:
+6. Aplicar cambios:
+```bash
 terraform apply tfplan
+```
 
 Esto creara automáticamente:
+
 VPC con subredes públicas y privadas
+
 EKS cluster y nodos (1-3 instancias t3.small)
+
 Redis en ElastiCache (privado y con seguridad aplicada)
+
 Bucket S3 privado y encriptado
+
 IAM policies para acceso desde EKS a S3
 
 ## Seguridad y Networking
 Este proyecto ya incluye reglas de seguridad que seran utilizadas en la activida numero dos de crear una aplicacion:
 
 Reglas de entrada Redis:
+
 Permite el puerto TCP 6379 desde la red interna 10.0.0.0/16
+
 Permite puertos 6379-6390 desde los nodos del EKS (source_security_group_id = SG del node group)
 
 Reglas de salida Redis:
+
 Acceso total hacia 0.0.0.0/0
 
 ## Validacion:
+```bash
 aws eks update-kubeconfig --region us-east-1 --name test-eks-devops
-kubectl get no|des
+kubectl get nodes
 kubectl get svc -n default
+```
+
 
 ## Eliminacion:
+```bash
 terraform destroy
+```
 
 # 🚀 Despliegue de Aplicación Node.js + Redis en EKS (Parte 2)
 
@@ -117,13 +145,21 @@ La infraestructura (EKS, Redis, S3, etc.) ya debe haber sido creada con Terrafor
 ## ✅ ¿Qué hace esta aplicación?
 
 Esta aplicación Node.js despliega un único contenedor que:
+
 Sirve un archivo index.html con el mensaje "Hello World test !" en la ruta /
+
 Expone una ruta /api que:
+
 Conecta a una instancia de Redis (ElastiCache)
+
 Incrementa un contador de visitas cada vez que se accede
+
 Devuelve una respuesta con el número actual de visitas
+
 También incluye:
+
 Despliegue con 1 a 3 réplicas en Kubernetes (EKS)
+
 DNS privado simulado con nginx.hello.local para testing desde tu máquina local
 
 ## 📁 Estructura del Proyecto
@@ -159,13 +195,14 @@ Antes de continuar, asegurate de tener:
  `AWS_SECRET_ACCESS_KEY` Para autenticarse con AWS
 
 ## 🚦 Paso 1: Clonar el Repositorio
-
+```bash
 git clone https://github.com/joacofurlan/challenger-mindfactory.git
+```
 cd challenger-mindfactory
 
 ## ⚙️ Paso 2: Revisar el archivo values.yaml
 
-Ubicado en helm/app/values.yaml. Asegurate de tener el host Redis correcto:
+Ubicado en `helm/app/values.yaml.` Asegurate de tener el host Redis correcto:
 
 replicaCount: 3
 
@@ -178,8 +215,8 @@ service:
   port: 80
 
 redis:
-  host: clustercfg.test-redis-devops.fvaym2.use1.cache.amazonaws.com
-  port: 6379
+  host: `clustercfg.test-redis-devops.fvaym2.use1.cache.amazonaws.com`
+  port: `6379`
   
 ## ⚙️ Paso 3: Configurar tu entorno local para probar luego
 
@@ -189,12 +226,15 @@ Abrí el bloc de notas como administrador (click derecho → Ejecutar como admin
 
 Abrí el archivo:
 
-C:\Windows\System32\drivers\etc\hosts
+`C:\Windows\System32\drivers\etc\hosts`
+
 Agregá esta línea al final:
-127.0.0.1 nginx.hello.local
+
+`127.0.0.1 nginx.hello.local`
+
 Guardá y cerrá.
 
-Esto permitirá que al hacer curl http://nginx.hello.local:8080 tu máquina redirija a localhost (útil para testing).
+Esto permitirá que al hacer `curl http://nginx.hello.local:8080` tu máquina redirija a localhost (útil para testing).
 
 ## 🚀 Paso 4: Deploy Automático con GitHub Actions
 
@@ -210,13 +250,15 @@ No necesitás correr comandos manualmente: el despliegue es automático y reprod
 ## 🧪 Paso 5: Validar el Despliegue
 
 Verificar pods:
+```bash
 kubectl get pods
+```
 Todos deben aparecer en estado Running.
 
-Probar desde tu máquina local (recordá configurar /etc/hosts y hacer port-forward si usás ClusterIP):
-
+Probar desde tu máquina local (recordá configurar `/etc/hosts` y hacer port-forward si usás ClusterIP):
+```bash
 kubectl port-forward svc/nginx-hello 8080:80
-
+```
 Navegador o curl:
 http://nginx.hello.local:8080/ → debe mostrar el mensaje HTML Hello World test !
 
@@ -228,14 +270,18 @@ http://nginx.hello.local:8080/api → debe responder con:
 ## 🧹 Rollbacks
 
 Si un deploy falla (por ejemplo: error en Helm o falla de pull de imagen):
-
+```bash
 helm rollback nginx-hello <número-de-revision>
+```
 Para ver el historial:
+```bash
 helm history nginx-hello
+```
 
 ## 🧼 Limpieza Manual
 
 Para eliminar el despliegue:
+
 helm uninstall nginx-hello
 
 ## 📎 Extras
