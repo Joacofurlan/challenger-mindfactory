@@ -32,8 +32,6 @@ Este proyecto resuelve un desafío técnico de DevOps, incluyendo:
 * Uso de Helm para definir y desplegar la app.
 * Uso de GitHub Actions para el CI/CD completo.
 
----
-
 ## 🛠 Infraestructura - Terraform (IaC)
 El proyecto está compuesto por módulos y configuraciones para:
 
@@ -114,8 +112,6 @@ Como desplegar una aplicación Node.js + Redis sobre Kubernetes en AWS, utilizan
 
 La infraestructura (EKS, Redis, S3, etc.) ya debe haber sido creada con Terraform previamente (ver "1. Infraestructura como Código (IaC)" ).
 
----
-
 ## ✅ ¿Qué hace esta aplicación?
 
 Esta aplicación Node.js despliega un único contenedor que:
@@ -151,7 +147,7 @@ challenger-mindfactory/
 
 Antes de continuar, asegurate de tener:
 
-- El clúster EKS funcionando (ver README-parte-1)
+- El clúster EKS funcionando (ver "1. Infraestructura como Código (IaC)")
 - Redis desplegado en ElastiCache
 - Terraform ya ejecutado
 - Docker habilitado en GitHub Actions
@@ -165,6 +161,7 @@ git clone https://github.com/joacofurlan/challenger-mindfactory.git
 cd challenger-mindfactory
 
 ## ⚙️ Paso 2: Revisar el archivo values.yaml
+
 Ubicado en helm/app/values.yaml. Asegurate de tener el host Redis correcto:
 
 replicaCount: 3
@@ -182,6 +179,7 @@ redis:
   port: 6379
   
 ## ⚙️ Paso 3: Configurar tu entorno local para probar luego
+
 Para simular un DNS privado desde tu PC:
 
 Abrí el bloc de notas como administrador (click derecho → Ejecutar como administrador)
@@ -207,6 +205,7 @@ Esto está automatizado en `.github/workflows/deploy.yaml`.
 No necesitás correr comandos manualmente: el despliegue es automático y reproducible.
   
 ## 🧪 Paso 5: Validar el Despliegue
+
 Verificar pods:
 kubectl get pods
 Todos deben aparecer en estado Running.
@@ -223,6 +222,7 @@ http://nginx.hello.local:8080/api → debe responder con:
 (El contador aumentará en cada visita)
 
 ## 🧹 Rollbacks
+
 Si un deploy falla (por ejemplo: error en Helm o falla de pull de imagen):
 
 helm rollback nginx-hello <número-de-revision>
@@ -230,6 +230,7 @@ Para ver el historial:
 helm history nginx-hello
 
 ## 🧼 Limpieza Manual
+
 Para eliminar el despliegue:
 helm uninstall nginx-hello
 
