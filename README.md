@@ -128,22 +128,23 @@ DNS privado simulado con nginx.hello.local para testing desde tu máquina local
 
 ## 📁 Estructura del Proyecto
 
+```bash
 challenger-mindfactory/
-├── app/ # Código Node.js (Dockerizado)
-│ ├── redis.js
-│ ├── Dockerfile
-│ └── package.json
+├── app/                    # Código Node.js (Dockerizado)
+│   ├── redis.js
+│   ├── Dockerfile
+│   └── package.json
 │
-├── helm/app/ #
-│ ├── values.yaml
-│ ├── Chart.yaml
-│ └── templates/
-│ ├── deployment.yaml
-│ ├── service.yaml
-│ 
+├── helm/app/              # Helm Chart para Kubernetes
+│   ├── values.yaml
+│   ├── Chart.yaml
+│   └── templates/
+│       ├── deployment.yaml
+│       └── service.yaml
 │
-└── .github/workflows/
-└── deploy.yaml # CI/CD con GitHub Actions
+├── .github/workflows/     # CI/CD con GitHub Actions
+│   └── deploy.yml
+```
 
 ## 🧩 Requisitos Previos
 
