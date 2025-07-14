@@ -1,0 +1,26 @@
+💰 Estimación de Costos,,
+Recurso,Detalle técnico,Estimado mensual
+EKS Control Plane,Servicio administrado de AWS,USD 73.00
+EKS Worker Nodes,"Suponiendo 3 réplicas, cada pod usa ~0.25 vCPU / 512Mi RAM:
+Usamos 2 nodos t3.medium (2 vCPU, 4 GiB RAM)",USD ~60.75
+ElastiCache Redis,"Nodo cache.t3.micro, sin réplicas ni multi-AZ",USD ~12.50
+S3 Bucket,Estimación genérica de un bajo uso,USD ~0.20
+VPC + Red,"Subredes, IGW, SG, sin NAT Gateway",USD ~0.00 – 1.00
+TOTAL,,~USD 147.45
+,,
+Fuente : https://aws.amazon.com/es/pricing/,Calculadora de Precios: https://calculator.aws/#/,
+,,
+Amazon EKS (Elastic Kubernetes Service),Worker Nodes (EC2):,
+Control Plane:,Tipo usado como estimación: t3.medium,
+AWS cobra USD 0.10/hora por cada clúster EKS,Precio en us-east-1: USD 0.0416/hora,
+0.10 × 730 horas = USD 73.00/mes,Supuse 2 nodos → 2 × 0.0416 × 730 = USD 60.75/mes,
+,,
+Amazon ElastiCache for Redis,Amazon S3,
+Tipo: cache.t3.micro (suficiente para test),Almacenamiento estándar en us-east-1:,
+Precio: USD 0.017/hora → 0.017 × 730 = USD 12.41/mes,USD 0.023/GB-mes (primer TB),
+,Supuse 5 GB de uso básico: 5 × 0.023 = USD 0.115,
+,,
+VPC / Networking,,
+"Recursos como VPC, subredes, SGs, route tables, Internet Gateway son gratis.",,
+Tráfico de salida (Data Transfer Out):,,
+"Primer GB gratis, luego USD 0.09/GB (primer TB)",,
