@@ -221,6 +221,7 @@ http://nginx.hello.local:8080/ → debe mostrar el mensaje HTML Hello World test
 
 http://nginx.hello.local:8080/api → debe responder con:
 { "message": "Esta es la visita número X" }
+
 (El contador aumentará en cada visita)
 
 ## 🧹 Rollbacks
