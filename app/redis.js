@@ -1,5 +1,7 @@
 const express = require("express");
 const redis = require("redis");
+const path = require("path");
+
 const app = express();
 const port = 80;
 
@@ -22,16 +24,20 @@ client.connect()
   .then(() => console.log("✅ Redis connected"))
   .catch(err => console.error("❌ Redis connect error:", err));
 
-app.get("/", async (req, res) => {
-  console.log("📥 GET / request received");
+// Servir el index.html
+app.use(express.static(path.join(__dirname)));
+
+// Endpoint para probar Redis
+app.get("/api", async (req, res) => {
+  console.log("📥 GET /api request received");
   try {
     await client.set("hello", "world");
     const value = await client.get("hello");
     console.log("🔁 Valor leído desde Redis:", value);
-    res.send(`Hello from Redis: ${value}`);
+    res.json({ message: `Hello from Redis: ${value}` });
   } catch (err) {
     console.error("❌ Error en Redis:", err);
-    res.status(500).send("Redis error");
+    res.status(500).json({ error: "Redis error" });
   }
 });
 

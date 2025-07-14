@@ -13,7 +13,7 @@ spec:
         app: {{ .Release.Name }}
     spec:
       containers:
-        - name: nginx-redis-app
+        - name: app
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
@@ -38,4 +38,4 @@ spec:
             initialDelaySeconds: 10
             periodSeconds: 20
             timeoutSeconds: 5
-            failureThreshold: 5
+            failureThreshold: 3
