@@ -118,11 +118,15 @@ La infraestructura (EKS, Redis, S3, etc.) ya debe haber sido creada con Terrafor
 
 ## ✅ ¿Qué hace esta aplicación?
 
-- Ejecuta un contenedor Node.js que:
-  - Sirve un archivo HTML con `Hello World`
-  - Lee y escribe valores en Redis
-- Se despliega con 1 a 3 réplicas en Kubernetes (EKS)
-- Se accede desde tu máquina usando un DNS privado (`nginx.hello.local`)
+Esta aplicación Node.js despliega un único contenedor que:
+Sirve un archivo index.html con el mensaje "Hello World test !" en la ruta /
+Expone una ruta /api que:
+Conecta a una instancia de Redis (ElastiCache)
+Incrementa un contador de visitas cada vez que se accede
+Devuelve una respuesta con el número actual de visitas
+También incluye:
+Despliegue con 1 a 3 réplicas en Kubernetes (EKS)
+DNS privado simulado con nginx.hello.local para testing desde tu máquina local
 
 ## 📁 Estructura del Proyecto
 
@@ -160,7 +164,7 @@ Antes de continuar, asegurate de tener:
 git clone https://github.com/joacofurlan/challenger-mindfactory.git
 cd challenger-mindfactory
 
-⚙️ Paso 2: Revisar el archivo values.yaml
+## ⚙️ Paso 2: Revisar el archivo values.yaml
 Ubicado en helm/app/values.yaml. Asegurate de tener el host Redis correcto:
 
 replicaCount: 3
@@ -177,7 +181,7 @@ redis:
   host: clustercfg.test-redis-devops.fvaym2.use1.cache.amazonaws.com
   port: 6379
   
-⚙️ Paso 3: Configurar tu entorno local para probar luego
+## ⚙️ Paso 3: Configurar tu entorno local para probar luego
 Para simular un DNS privado desde tu PC:
 
 Abrí el bloc de notas como administrador (click derecho → Ejecutar como administrador)
@@ -191,80 +195,46 @@ Guardá y cerrá.
 
 Esto permitirá que al hacer curl http://nginx.hello.local:8080 tu máquina redirija a localhost (útil para testing).
 
-🚀 Paso 4: GitHub Actions - Deploy Automático
-Cada vez que se hace git push a la rama main, GitHub va a:
+## 🚀 Paso 4: Deploy Automático con GitHub Actions
 
-Construir la imagen Docker a partir de app/Dockerfile
+Cada vez que hacés `git push` a la rama `main`, se ejecuta un workflow CI/CD que:
 
-Subirla a GitHub Container Registry (GHCR)
+- Construye la imagen Docker desde `app/Dockerfile`
+- La sube a GitHub Container Registry (GHCR)
+- Actualiza tu clúster EKS con Helm, usando los valores definidos en `helm/app/values.yaml`
 
-Actualizar tu clúster EKS usando Helm
-
-No necesitás hacer nada más. El archivo .github/workflows/deploy.yaml ya contiene todo:
-
-helm upgrade --install nginx-hello ./helm/app \
-  --namespace default \
-  --values ./helm/app/values.yaml \
-  --set image.repository=ghcr.io/joacofurlan/challenger-mindfactory \
-  --set image.tag=latest \
-  --wait \
-  --debug
+Esto está automatizado en `.github/workflows/deploy.yaml`.  
+No necesitás correr comandos manualmente: el despliegue es automático y reproducible.
   
-🧪 Paso 5: Validar el Despliegue
+## 🧪 Paso 5: Validar el Despliegue
 Verificar pods:
 kubectl get pods
 Todos deben aparecer en estado Running.
 
-Probar internamente:
-kubectl exec -it <nombre-del-pod> -- sh
-curl localhost/
-# Debe mostrar:
-Hello from Redis: world
-Probar desde tu PC (DNS simulado):
-bash
-Copiar
-Editar
-curl http://nginx.hello.local:8080
-# También debe mostrar:
-Hello from Redis: world
-Si no funciona, asegurate de tener configurado correctamente el archivo hosts de Windows y que estés redirigiendo al puerto correcto con port-forward si es necesario.
+Probar desde tu máquina local (recordá configurar /etc/hosts y hacer port-forward si usás ClusterIP):
 
-🧹 Rollbacks (si algo sale mal)
+kubectl port-forward svc/nginx-hello 8080:80
+
+Navegador o curl:
+http://nginx.hello.local:8080/ → debe mostrar el mensaje HTML Hello World test !
+
+http://nginx.hello.local:8080/api → debe responder con:
+{ "message": "Esta es la visita número X" }
+(El contador aumentará en cada visita)
+
+## 🧹 Rollbacks
 Si un deploy falla (por ejemplo: error en Helm o falla de pull de imagen):
 
-bash
-Copiar
-Editar
 helm rollback nginx-hello <número-de-revision>
 Para ver el historial:
-
-bash
-Copiar
-Editar
 helm history nginx-hello
-🧼 Limpieza Manual
+
+## 🧼 Limpieza Manual
 Para eliminar el despliegue:
-
-bash
-Copiar
-Editar
 helm uninstall nginx-hello
-
----
 
 ## 📎 Extras
 
-* Se utilizaron prácticas de debugging y troubleshooting (Redis TLS, logs, rollback Helm).
-* Se corrigieron errores de imagen (ImagePullBackOff) y conflictos de upgrade (`pending-upgrade`).
-* Validación de `/etc/hosts` fue crítica: se resolvió editando el archivo como **Administrador**.
-
----
-
-## 🧠 Autor
-
-**Joaquín Furlan**
-Proyecto técnico resuelto con enfoque DevOps extremo.
-
----
-
-¿Preguntas? ¿Feedback? Abierto a mejoras 💬
+* Se utilizó Redis ElastiCache con TLS.
+* Se configuró una app Node.js que sirve HTML y opera con Redis desde un endpoint /api.
+* Se validó /etc/hosts en Windows para simular DNS privado correctamente.
